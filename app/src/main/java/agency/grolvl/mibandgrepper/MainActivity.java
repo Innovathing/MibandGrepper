@@ -34,7 +34,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_ENABLE_BT = 1;
-    private static final int SCAN_PERIOD = 5000;
+    private static final int SCAN_PERIOD = 10000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +49,6 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
 
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
-        mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
 
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.monSuperSwipeRefreshLayout);
         mSwipeRefreshLayout.setOnRefreshListener(this);
@@ -69,6 +68,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
             Intent enableBt = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBt, REQUEST_ENABLE_BT);
         } else {
+            mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
             scanDevices(true);
         }
 
@@ -81,6 +81,11 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
         {
             finish();
             return;
+        }
+
+        if(requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_OK)
+        {
+            mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
         }
 
         super.onActivityResult(requestCode, resultCode, data);
@@ -132,25 +137,14 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
             }, SCAN_PERIOD);
 
             // Start scan
-            mBluetoothLeScanner.startScan(new ArrayList<ScanFilter>(), new ScanSettings.Builder().build(), new ScanCallback() {
-                @Override
-                public void onScanResult(int callbackType, ScanResult result) {
-                    super.onScanResult(callbackType, result);
-                    mDeviceListAdapter.add(result.getDevice()); // add on list when new device
-                }
-            });
+            mBluetoothLeScanner.startScan(DeviceScanCallback.getInstance(mDeviceListAdapter));
         } else { // stop scan
             Log.d(TAG, "stop scanning");
             // Stop wipe animation
             mSwipeRefreshLayout.setRefreshing(false);
 
-            // Stop scan ---> MARCHE PAS SA RACE
-            mBluetoothLeScanner.stopScan(new ScanCallback() {
-                @Override
-                public void onScanResult(int callbackType, ScanResult result) {
-                    super.onScanResult(callbackType, result);
-                }
-            });
+            // Stop scan
+            mBluetoothLeScanner.stopScan(DeviceScanCallback.getInstance(mDeviceListAdapter));
 
         }
     }
