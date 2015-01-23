@@ -2,23 +2,31 @@ package agency.grolvl.mibandgrepper;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter;
+import android.bluetooth.le.ScanResult;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 
-public class MainActivity extends ActionBarActivity {
 
+public class MainActivity extends ActionBarActivity implements SwipeRefreshLayout.OnRefreshListener {
+
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private ListView mListView;
     private DeviceListAdapter mDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
@@ -26,6 +34,7 @@ public class MainActivity extends ActionBarActivity {
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_ENABLE_BT = 1;
+    private static final int SCAN_PERIOD = 5000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +51,11 @@ public class MainActivity extends ActionBarActivity {
         mBluetoothAdapter = bluetoothManager.getAdapter();
         mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
 
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.monSuperSwipeRefreshLayout);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+
         mListView = (ListView) findViewById(R.id.monSuperListView);
-        mDeviceListAdapter = new DeviceListAdapter();
+        mDeviceListAdapter = new DeviceListAdapter(this, R.layout.device_layout);
         mListView.setAdapter(mDeviceListAdapter);
 
     }
@@ -96,11 +108,50 @@ public class MainActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onRefresh() {
+        scanDevices(true);
+    }
+
     private void scanDevices(boolean enable)
     {
-        if(enable)
+        if(enable) // do scan
         {
-           Log.d(TAG, "scanDevices");
+            Log.d(TAG, "start scanning");
+
+            // Start Swipe animation and clear list
+            mSwipeRefreshLayout.setRefreshing(true);
+            mDeviceListAdapter.clear();
+
+            // Stop scan in SCAN_PERIOD ms
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    scanDevices(false);
+                }
+            }, SCAN_PERIOD);
+
+            // Start scan
+            mBluetoothLeScanner.startScan(new ArrayList<ScanFilter>(), new ScanSettings.Builder().build(), new ScanCallback() {
+                @Override
+                public void onScanResult(int callbackType, ScanResult result) {
+                    super.onScanResult(callbackType, result);
+                    mDeviceListAdapter.add(result.getDevice()); // add on list when new device
+                }
+            });
+        } else { // stop scan
+            Log.d(TAG, "stop scanning");
+            // Stop wipe animation
+            mSwipeRefreshLayout.setRefreshing(false);
+
+            // Stop scan ---> MARCHE PAS SA RACE
+            mBluetoothLeScanner.stopScan(new ScanCallback() {
+                @Override
+                public void onScanResult(int callbackType, ScanResult result) {
+                    super.onScanResult(callbackType, result);
+                }
+            });
+
         }
     }
 

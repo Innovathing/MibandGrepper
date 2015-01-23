@@ -1,46 +1,34 @@
 package agency.grolvl.mibandgrepper;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-
-import java.util.ArrayList;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 /**
  * Created by tlk on 23/01/15.
  */
-public class DeviceListAdapter extends BaseAdapter {
+public class DeviceListAdapter extends ArrayAdapter<BluetoothDevice> {
 
-    private ArrayList<BluetoothDevice> devices;
+    private Context context;
 
-    public DeviceListAdapter()
-    {
-        this.devices = new ArrayList<>();
-    }
+    private final static String TAG = "DeviceListAdapter";
 
-    public void add(BluetoothDevice d)
-    {
-        this.devices.add(d);
-    }
-
-    @Override
-    public int getCount() {
-        return 0;
-    }
-
-    @Override
-    public Object getItem(int position) {
-        return this.devices.get(position);
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return 0;
+    public DeviceListAdapter(Context context, int resource) {
+        super(context, resource);
+        this.context = context;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        return null;
+        BluetoothDevice device = getItem(position);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        View row = inflater.inflate(R.layout.device_layout, parent, false);
+        TextView name = (TextView) row.findViewById(R.id.bluetoothDeviceName);
+        name.setText(device.getName());
+        return row;
     }
 }
