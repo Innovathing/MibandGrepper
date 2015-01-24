@@ -18,6 +18,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -56,6 +57,12 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
         mListView = (ListView) findViewById(R.id.monSuperListView);
         mDeviceListAdapter = new DeviceListAdapter(this, R.layout.device_layout);
         mListView.setAdapter(mDeviceListAdapter);
+        mListView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, v.toString());
+            }
+        });
 
     }
 

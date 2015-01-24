@@ -28,7 +28,9 @@ public class DeviceListAdapter extends ArrayAdapter<BluetoothDevice> {
         LayoutInflater inflater = LayoutInflater.from(context);
         View row = inflater.inflate(R.layout.device_layout, parent, false);
         TextView name = (TextView) row.findViewById(R.id.bluetoothDeviceName);
+        TextView address = (TextView) row.findViewById(R.id.bluetoothDeviceAddress);
         name.setText(device.getName());
+        address.setText(device.getAddress().toString());
         return row;
     }
 }
