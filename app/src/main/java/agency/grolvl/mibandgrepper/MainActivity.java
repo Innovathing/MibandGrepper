@@ -80,7 +80,6 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
             startActivityForResult(enableBt, REQUEST_ENABLE_BT);
         } else {
             mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-            scanDevices(true);
         }
 
     }
@@ -97,6 +96,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
         if(requestCode == REQUEST_ENABLE_BT && resultCode == Activity.RESULT_OK)
         {
             mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
+            scanDevices(true);
         }
 
         super.onActivityResult(requestCode, resultCode, data);
