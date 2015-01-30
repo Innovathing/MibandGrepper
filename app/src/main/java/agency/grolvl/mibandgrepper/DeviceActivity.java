@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
@@ -15,6 +16,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import java.util.List;
+
 
 public class DeviceActivity extends ActionBarActivity {
 
@@ -25,6 +28,7 @@ public class DeviceActivity extends ActionBarActivity {
     private BluetoothDevice mBluetoothDevice;
     private BluetoothGatt mBluetoothGatt;
     private int mConnectionState = STATE_DISCONNECTED;
+    private List<BluetoothGattService> mGattServices;
 
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
@@ -39,11 +43,26 @@ public class DeviceActivity extends ActionBarActivity {
             if(newState == BluetoothProfile.STATE_CONNECTED)
             {
                 setmConnectionState(STATE_CONNECTED);
+                mBluetoothGatt.discoverServices();
             } else if(newState == BluetoothProfile.STATE_DISCONNECTED)
             {
                 setmConnectionState(STATE_DISCONNECTED);
             } else {
                 Log.d(TAG, "zarb state : " + newState);
+            }
+        }
+
+        @Override
+        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            if(status == BluetoothGatt.GATT_SUCCESS && mConnectionState == STATE_CONNECTED)
+            {
+                mGattServices = mBluetoothGatt.getServices();
+                for(BluetoothGattService gs : mGattServices)
+                {
+                    Log.d(TAG, "service : " + gs.getUuid().toString());
+                }
+            } else {
+                Log.d(TAG, "onServicesDiscovered status : " + status);
             }
         }
     };
