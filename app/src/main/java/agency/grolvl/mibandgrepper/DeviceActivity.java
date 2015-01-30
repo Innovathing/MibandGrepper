@@ -59,7 +59,7 @@ public class DeviceActivity extends ActionBarActivity {
                 mGattServices = mBluetoothGatt.getServices();
                 for(BluetoothGattService gs : mGattServices)
                 {
-                    Log.d(TAG, "service : " + gs.getUuid().toString());
+                    Log.d(TAG, "service : " + GattUtils.lookup(gs));
                 }
             } else {
                 Log.d(TAG, "onServicesDiscovered status : " + status);
