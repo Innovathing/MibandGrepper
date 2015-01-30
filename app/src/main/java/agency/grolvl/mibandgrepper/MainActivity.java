@@ -27,6 +27,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
     private DeviceListAdapter mDeviceListAdapter;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothLeScanner mBluetoothLeScanner;
+    private Handler mHandlerStopScanCallback;
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_ENABLE_BT = 1;
@@ -42,6 +43,8 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
             Toast.makeText(this, R.string.ble_not_supported, Toast.LENGTH_SHORT);
             finish();
         }
+
+        mHandlerStopScanCallback = new Handler();
 
         BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
@@ -135,7 +138,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
             mDeviceListAdapter.clear();
 
             // Stop scan in SCAN_PERIOD ms
-            new Handler().postDelayed(new Runnable() {
+            mHandlerStopScanCallback.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     scanDevices(false);
@@ -148,6 +151,8 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
             Log.d(TAG, "stop scanning");
             // Stop wipe animation
             mSwipeRefreshLayout.setRefreshing(false);
+            // stop callback
+            mHandlerStopScanCallback.removeCallbacksAndMessages(null);
 
             // Stop scan
             mBluetoothLeScanner.stopScan(DeviceScanCallback.getInstance(mDeviceListAdapter));
