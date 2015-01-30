@@ -4,10 +4,6 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanFilter;
-import android.bluetooth.le.ScanResult;
-import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -22,8 +18,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
-
-import java.util.ArrayList;
 
 
 public class MainActivity extends ActionBarActivity implements SwipeRefreshLayout.OnRefreshListener {
@@ -61,9 +55,10 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                scanDevices(false);
                 Log.d(TAG, position + "");
                 Intent intent = new Intent(MainActivity.this, DeviceActivity.class);
-                intent.putExtra(DeviceActivity.EXTRAS_DEVICE, mDeviceListAdapter.getItem(position));
+                intent.putExtra(DeviceActivity.EXTRAS_DEVICE, mDeviceListAdapter.getItem(position).getAddress().toString());
                 startActivity(intent);
             }
         });
