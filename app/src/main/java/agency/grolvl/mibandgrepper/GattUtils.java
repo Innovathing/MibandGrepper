@@ -14,8 +14,13 @@ public class GattUtils {
 
     private static String UUID_BASE = "-0000-1000-8000-00805f9b34fb";
 
+    /*
+    Informations from https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx
+     */
     static {
-        attributes.put("00001800" + UUID_BASE, "Zboub");
+        attributes.put("00001800" + UUID_BASE, "Generic informations");
+        attributes.put("00001801" + UUID_BASE, "Generic attribute");
+        attributes.put("00001802" + UUID_BASE, "Immediate alert");
     }
 
     public static String lookup(UUID uuid)
