@@ -1,5 +1,6 @@
 package agency.grolvl.mibandgrepper;
 
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 
 import java.util.HashMap;
@@ -32,6 +33,11 @@ public class GattUtils {
     public static String lookup(BluetoothGattService bluetoothGattService)
     {
         return lookup(bluetoothGattService.getUuid());
+    }
+
+    public static String lookup(BluetoothGattCharacteristic bluetoothGattCharacteristic)
+    {
+        return lookup(bluetoothGattCharacteristic.getUuid());
     }
 
 }

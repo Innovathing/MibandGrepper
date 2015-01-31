@@ -1,5 +1,7 @@
 package agency.grolvl.mibandgrepper;
 
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -18,6 +20,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 
 public class DeviceActivity extends ActionBarActivity {
@@ -63,11 +66,35 @@ public class DeviceActivity extends ActionBarActivity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             Log.d(TAG, "receive action : " +action);
-            if(action.equals(BluetoothLeService.ACTION_GATT_CONNECTED)) {
-                Log.d(TAG, "There");
+            if(action.equals(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED)) {
+                displayGattServices(mBluetoothLeService.getGattServices());
             }
         }
     };
+
+    private void displayGattServices(List<BluetoothGattService> gattServices) {
+        for(BluetoothGattService gs : gattServices)
+        {
+            HashMap<String, String> currentService = new HashMap<>();
+            ArrayList<HashMap<String, String>> currentServiceCharacteristics = new ArrayList<>();
+
+            currentService.put(LIST_NAME, GattUtils.lookup(gs));
+            currentService.put(LIST_UUID, gs.getUuid().toString());
+            gattServicesData.add(currentService);
+
+            List<BluetoothGattCharacteristic> gattCharacteristics = gs.getCharacteristics();
+            for(BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics)
+            {
+                HashMap<String, String> currentCharacteristic = new HashMap<>();
+                currentCharacteristic.put(LIST_NAME, GattUtils.lookup(gattCharacteristic));
+                currentCharacteristic.put(LIST_UUID, gattCharacteristic.getUuid().toString());
+                currentServiceCharacteristics.add(currentCharacteristic);
+            }
+
+            gattCharacteristicData.add(currentServiceCharacteristics);
+        }
+        mSimpleExpandableListAdapter.notifyDataSetChanged();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,6 +150,7 @@ public class DeviceActivity extends ActionBarActivity {
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTING);
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_SERVICES_DISCOVERED);
         return intentFilter;
     }
 

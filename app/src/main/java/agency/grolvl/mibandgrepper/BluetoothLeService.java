@@ -35,8 +35,10 @@ public class BluetoothLeService extends Service {
     public final static String ACTION_GATT_CONNECTED = "agency.grolvl.mibandgrepper.ACTION_GATT_CONNECTED";
     public final static String ACTION_GATT_DISCONNECTED = "agency.grolvl.mibandgrepper.ACTION_GATT_DISCONNECTED";
     public final static String ACTION_GATT_CONNECTING = "agency.grolvl.mibandgrepper.ACTION_GATT_CONNECTING";
+    public final static String ACTION_GATT_SERVICES_DISCOVERED = "agency.grolvl.mibandgrepper.ACTION_GATT_SERVICES_DISCOVERED";
 
     private final IBinder mBinder = new LocalBinder();
+
     public class LocalBinder extends Binder {
         BluetoothLeService getService()
         {
@@ -64,17 +66,7 @@ public class BluetoothLeService extends Service {
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if(status == BluetoothGatt.GATT_SUCCESS && mConnectionState == STATE_CONNECTED)
             {
-                mGattServices = mBluetoothGatt.getServices();
-                for(BluetoothGattService gs : mGattServices)
-                {
-                    Log.d(TAG, "service : " + GattUtils.lookup(gs));
-
-//                    HashMap<String, String> currentService = new HashMap<>();
-//                    currentService.put(LIST_NAME, GattUtils.lookup(gs));
-//                    currentService.put(LIST_UUID, gs.getUuid().toString());
-//                    gattServicesData.add(currentService);
-                }
-//                mSimpleExpandableListAdapter.notifyDataSetChanged();
+                broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
             } else {
                 Log.d(TAG, "onServicesDiscovered status : " + status);
             }
@@ -157,6 +149,10 @@ public class BluetoothLeService extends Service {
     {
         Intent intent = new Intent(action);
         sendBroadcast(intent);
+    }
+
+    public List<BluetoothGattService> getGattServices() {
+        return mBluetoothGatt.getServices();
     }
 
 }
