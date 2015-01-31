@@ -14,8 +14,12 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ExpandableListView;
+import android.widget.SimpleExpandableListAdapter;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -30,9 +34,17 @@ public class DeviceActivity extends ActionBarActivity {
     private int mConnectionState = STATE_DISCONNECTED;
     private List<BluetoothGattService> mGattServices;
 
+    private ExpandableListView mExpandableListView;
+    private SimpleExpandableListAdapter mSimpleExpandableListAdapter;
+    private ArrayList<HashMap<String, String>> gattServicesData = new ArrayList<>();
+    private ArrayList<ArrayList<HashMap<String, String>>> gattCharacteristicData = new ArrayList<>();
+
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
+
+    private static final String LIST_NAME = "NAME";
+    private static final String LIST_UUID = "UUID";
 
     private static final String TAG = "DeviceActivity";
 
@@ -60,7 +72,13 @@ public class DeviceActivity extends ActionBarActivity {
                 for(BluetoothGattService gs : mGattServices)
                 {
                     Log.d(TAG, "service : " + GattUtils.lookup(gs));
+
+                    HashMap<String, String> currentService = new HashMap<>();
+                    currentService.put(LIST_NAME, GattUtils.lookup(gs));
+                    currentService.put(LIST_UUID, gs.getUuid().toString());
+                    gattServicesData.add(currentService);
                 }
+                mSimpleExpandableListAdapter.notifyDataSetChanged();
             } else {
                 Log.d(TAG, "onServicesDiscovered status : " + status);
             }
@@ -71,6 +89,20 @@ public class DeviceActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device);
+
+        mExpandableListView = (ExpandableListView) findViewById(R.id.gatt_services_list);
+        mSimpleExpandableListAdapter = new SimpleExpandableListAdapter(
+                this,
+                gattServicesData,
+                android.R.layout.simple_expandable_list_item_2,
+                new String[] {LIST_NAME, LIST_UUID},
+                new int[] {android.R.id.text1, android.R.id.text2},
+                gattCharacteristicData,
+                android.R.layout.simple_expandable_list_item_2,
+                new String[] {LIST_NAME, LIST_UUID},
+                new int[] {android.R.id.text1, android.R.id.text2}
+        );
+        mExpandableListView.setAdapter(mSimpleExpandableListAdapter);
 
         Intent intent = getIntent();
         String device = intent.getStringExtra(EXTRAS_DEVICE);
