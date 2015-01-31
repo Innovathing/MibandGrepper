@@ -62,6 +62,7 @@ public class DeviceActivity extends ActionBarActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            Log.d(TAG, "receive action : " +action);
             if(action.equals(BluetoothLeService.ACTION_GATT_CONNECTED)) {
                 Log.d(TAG, "There");
             }
@@ -120,6 +121,8 @@ public class DeviceActivity extends ActionBarActivity {
     private static IntentFilter makeGattUpdateIntentFilter() {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTING);
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_DISCONNECTED);
         return intentFilter;
     }
 

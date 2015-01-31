@@ -33,6 +33,8 @@ public class BluetoothLeService extends Service {
     private static final int STATE_CONNECTED = 2;
 
     public final static String ACTION_GATT_CONNECTED = "agency.grolvl.mibandgrepper.ACTION_GATT_CONNECTED";
+    public final static String ACTION_GATT_DISCONNECTED = "agency.grolvl.mibandgrepper.ACTION_GATT_DISCONNECTED";
+    public final static String ACTION_GATT_CONNECTING = "agency.grolvl.mibandgrepper.ACTION_GATT_CONNECTING";
 
     private final IBinder mBinder = new LocalBinder();
     public class LocalBinder extends Binder {
@@ -49,7 +51,6 @@ public class BluetoothLeService extends Service {
             if(newState == BluetoothProfile.STATE_CONNECTED)
             {
                 setSate(STATE_CONNECTED);
-                broadcastUpdate(ACTION_GATT_CONNECTED);
                 mBluetoothGatt.discoverServices();
             } else if(newState == BluetoothProfile.STATE_DISCONNECTED)
             {
@@ -139,11 +140,14 @@ public class BluetoothLeService extends Service {
         if(mConnectionState == STATE_DISCONNECTED)
         {
             Log.d(TAG, "STATE_DISCONNECTED");
+            broadcastUpdate(ACTION_GATT_DISCONNECTED);
         } else if(mConnectionState == STATE_CONNECTING)
         {
             Log.d(TAG, "STATE_CONNECTING");
+            broadcastUpdate(ACTION_GATT_CONNECTING);
         } else {
             Log.d(TAG, "STATE_CONNECTED");
+            broadcastUpdate(ACTION_GATT_CONNECTED);
         }
 
         this.mConnectionState = mConnectionState;
