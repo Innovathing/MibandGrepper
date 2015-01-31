@@ -1,15 +1,13 @@
 package agency.grolvl.mibandgrepper;
 
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -20,67 +18,52 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 
 public class DeviceActivity extends ActionBarActivity {
 
-
     public static final String EXTRAS_DEVICE = "DEVICE";
 
-    private BluetoothAdapter mBluetoothAdapter;
-    private BluetoothDevice mBluetoothDevice;
-    private BluetoothGatt mBluetoothGatt;
-    private int mConnectionState = STATE_DISCONNECTED;
-    private List<BluetoothGattService> mGattServices;
+    private BluetoothLeService mBluetoothLeService;
+    private String mBluetoothDeviceAddress;
 
     private ExpandableListView mExpandableListView;
     private SimpleExpandableListAdapter mSimpleExpandableListAdapter;
     private ArrayList<HashMap<String, String>> gattServicesData = new ArrayList<>();
     private ArrayList<ArrayList<HashMap<String, String>>> gattCharacteristicData = new ArrayList<>();
 
-    private static final int STATE_DISCONNECTED = 0;
-    private static final int STATE_CONNECTING = 1;
-    private static final int STATE_CONNECTED = 2;
+
 
     private static final String LIST_NAME = "NAME";
     private static final String LIST_UUID = "UUID";
 
     private static final String TAG = "DeviceActivity";
 
-    private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
-
+    // Manage Service lifecycle
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            if(newState == BluetoothProfile.STATE_CONNECTED)
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mBluetoothLeService = ((BluetoothLeService.LocalBinder) service).getService();
+            if(!mBluetoothLeService.initialize())
             {
-                setmConnectionState(STATE_CONNECTED);
-                mBluetoothGatt.discoverServices();
-            } else if(newState == BluetoothProfile.STATE_DISCONNECTED)
-            {
-                setmConnectionState(STATE_DISCONNECTED);
-            } else {
-                Log.d(TAG, "zarb state : " + newState);
+                Toast.makeText(DeviceActivity.this, R.string.device_not_found, Toast.LENGTH_SHORT);
+                finish();
             }
+            mBluetoothLeService.connect(mBluetoothDeviceAddress);
         }
 
         @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            if(status == BluetoothGatt.GATT_SUCCESS && mConnectionState == STATE_CONNECTED)
-            {
-                mGattServices = mBluetoothGatt.getServices();
-                for(BluetoothGattService gs : mGattServices)
-                {
-                    Log.d(TAG, "service : " + GattUtils.lookup(gs));
+        public void onServiceDisconnected(ComponentName name) {
+            mBluetoothLeService = null;
+        }
+    };
 
-                    HashMap<String, String> currentService = new HashMap<>();
-                    currentService.put(LIST_NAME, GattUtils.lookup(gs));
-                    currentService.put(LIST_UUID, gs.getUuid().toString());
-                    gattServicesData.add(currentService);
-                }
-                mSimpleExpandableListAdapter.notifyDataSetChanged();
-            } else {
-                Log.d(TAG, "onServicesDiscovered status : " + status);
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(action.equals(BluetoothLeService.ACTION_GATT_CONNECTED)) {
+                Log.d(TAG, "There");
             }
         }
     };
@@ -105,36 +88,39 @@ public class DeviceActivity extends ActionBarActivity {
         mExpandableListView.setAdapter(mSimpleExpandableListAdapter);
 
         Intent intent = getIntent();
-        String device = intent.getStringExtra(EXTRAS_DEVICE);
+        mBluetoothDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE);
 
-        BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        mBluetoothAdapter = bluetoothManager.getAdapter();
-        mBluetoothDevice = mBluetoothAdapter.getRemoteDevice(device);
-
-        if(mBluetoothDevice == null)
-        {
-            Toast.makeText(this, R.string.device_not_found, Toast.LENGTH_SHORT);
-            finish();
-        }
-
-        mBluetoothGatt = mBluetoothDevice.connectGatt(this, false, mGattCallback);
-        setmConnectionState(STATE_CONNECTING);
-
+        Intent bluetoothLeServiceIntent = new Intent(this, BluetoothLeService.class);
+        bindService(bluetoothLeServiceIntent, mServiceConnection, BIND_AUTO_CREATE);
     }
 
-    private void setmConnectionState(int mConnectionState) {
-
-        if(mConnectionState == STATE_DISCONNECTED)
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter());
+        if(mBluetoothLeService != null)
         {
-            Log.d(TAG, "STATE_DISCONNECTED");
-        } else if(mConnectionState == STATE_CONNECTING)
-        {
-            Log.d(TAG, "STATE_CONNECTING");
-        } else {
-            Log.d(TAG, "STATE_CONNECTED");
+            mBluetoothLeService.connect(mBluetoothDeviceAddress);
         }
+    }
 
-        this.mConnectionState = mConnectionState;
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(mGattUpdateReceiver);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(mServiceConnection);
+        mBluetoothLeService = null;
+    }
+
+    private static IntentFilter makeGattUpdateIntentFilter() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BluetoothLeService.ACTION_GATT_CONNECTED);
+        return intentFilter;
     }
 
     @Override

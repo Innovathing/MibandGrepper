@@ -27,6 +27,12 @@
             android:name=".DeviceActivity"
             android:label="@string/title_activity_device" >
         </activity>
+
+        <service
+            android:name=".BluetoothLeService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
     </application>
 
 </manifest>

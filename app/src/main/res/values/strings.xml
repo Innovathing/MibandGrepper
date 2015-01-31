@@ -8,5 +8,8 @@
     <string name="title_activity_device">DeviceActivity</string>
 
     <string name="device_not_found">Device not found.</string>
+    <string name="btmanager_not_found">BluetoothManager not found</string>
+    <string name="btadapter_not_found">BluetoothAdapter not found</string>
+    <string name="bluetooth_failed">Unable to initialize bluetooth</string>
 
 </resources>
