@@ -135,6 +135,7 @@ public class DeviceActivity extends ActionBarActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        mSimpleExpandableListAdapter.notifyDataSetInvalidated();
         unregisterReceiver(mGattUpdateReceiver);
     }
 
