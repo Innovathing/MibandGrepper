@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -15,6 +16,8 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class BluetoothLeService extends Service {
@@ -23,10 +26,9 @@ public class BluetoothLeService extends Service {
 
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
-    private BluetoothDevice mBluetoothDevice;
     private BluetoothGatt mBluetoothGatt;
-    private List<BluetoothGattService> mGattServices;
     private int mConnectionState = STATE_DISCONNECTED;
+    private final String mFlagWait = "";
 
     private static final int STATE_DISCONNECTED = 0;
     private static final int STATE_CONNECTING = 1;
@@ -36,6 +38,8 @@ public class BluetoothLeService extends Service {
     public final static String ACTION_GATT_DISCONNECTED = "agency.grolvl.mibandgrepper.ACTION_GATT_DISCONNECTED";
     public final static String ACTION_GATT_CONNECTING = "agency.grolvl.mibandgrepper.ACTION_GATT_CONNECTING";
     public final static String ACTION_GATT_SERVICES_DISCOVERED = "agency.grolvl.mibandgrepper.ACTION_GATT_SERVICES_DISCOVERED";
+    public final static String ENTRY_SERVICE = "SERVICE";
+    public final static String ENTRY_CHARACTERISTICS = "CHARACTERISTICS";
 
     private final IBinder mBinder = new LocalBinder();
 
@@ -71,7 +75,15 @@ public class BluetoothLeService extends Service {
                 Log.d(TAG, "onServicesDiscovered status : " + status);
             }
         }
-    };
+
+            @Override
+            public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                synchronized (mFlagWait)
+                {
+                    mFlagWait.notifyAll();
+                }
+            }
+        };
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -98,7 +110,7 @@ public class BluetoothLeService extends Service {
         mBluetoothAdapter = mBluetoothManager.getAdapter();
         if(mBluetoothAdapter == null)
         {
-            Toast.makeText(this, R.string.btadapter_not_found, Toast.LENGTH_SHORT);
+            Toast.makeText(this, R.string.btadapter_not_found, Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -107,10 +119,10 @@ public class BluetoothLeService extends Service {
 
     public void connect(String deviceAddr) {
 
-        mBluetoothDevice = mBluetoothAdapter.getRemoteDevice(deviceAddr);
+        BluetoothDevice mBluetoothDevice = mBluetoothAdapter.getRemoteDevice(deviceAddr);
         if(mBluetoothDevice == null)
         {
-            Toast.makeText(this, R.string.device_not_found, Toast.LENGTH_SHORT);
+            Toast.makeText(this, R.string.device_not_found, Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -151,8 +163,65 @@ public class BluetoothLeService extends Service {
         sendBroadcast(intent);
     }
 
-    public List<BluetoothGattService> getGattServices() {
-        return mBluetoothGatt.getServices();
+    /**
+     * Retrieve services with associated characteristics
+     * The return is an ArrayList of HashMap
+     * This HashMap contains two entry :
+     *  - "service" : the service object (BluetoothGattService)
+     *  - "characteristics" : an ArrayList of BluetoothGattCharacteristic (ArrayList<BluetoothGattCharacteristic>)
+     * So the return type is : ArrayList<HashMap<String, Object>>
+     * It can be seen as a JSON :
+     * [
+     *      {
+     *          "service": BluetoothGattService,
+     *          "characteristics": [
+     *              BluetoothGattCharacteristic,
+     *              BluetoothGattCharacteristic,
+     *              BluetoothGattCharacteristic
+     *              ]
+     *      },
+     *      {
+     *          "service": BluetoothGattService,
+     *          "characteristics": [
+     *              BluetoothGattCharacteristic
+     *              ]
+     *      }
+     * ]
+     *
+     * @return services with associated characteristics
+     */
+    public ArrayList<HashMap<String, Object>> getGattServices() {
+        Log.d(TAG, "getGattServices");
+        ArrayList<HashMap<String, Object>> ret = new ArrayList<>();
+
+        List<BluetoothGattService> services = mBluetoothGatt.getServices();
+        for(BluetoothGattService service : services)
+        {
+            Log.d(TAG, "new service");
+            HashMap<String, Object> currentService = new HashMap<>();
+            currentService.put(ENTRY_SERVICE, service);
+
+            List<BluetoothGattCharacteristic> characteristics = service.getCharacteristics();
+            for(BluetoothGattCharacteristic characteristic : characteristics)
+            {
+                if(GattUtils.isReadable(characteristic)) { //  retrieve data if its possible
+                    synchronized (mFlagWait) {
+                        try {
+                            mBluetoothGatt.readCharacteristic(characteristic);
+                            mFlagWait.wait(); // wait until characteristic is readed
+                            Log.d(TAG, "new chara");
+                        } catch (InterruptedException ignored) {
+                        }
+                    }
+                }
+            }
+
+            currentService.put(ENTRY_CHARACTERISTICS, characteristics);
+            ret.add(currentService);
+        }
+
+        Log.d(TAG, "getGattServices finished");
+        return ret;
     }
 
 }

@@ -12,6 +12,8 @@ import java.util.UUID;
  */
 public class GattUtils {
 
+    private final static String TAG = "GattUtils";
+
     private static HashMap<String, String> attributes = new HashMap<>();
 
     private static String UUID_BASE = "-0000-1000-8000-00805f9b34fb";
@@ -56,6 +58,17 @@ public class GattUtils {
     public static String lookup(BluetoothGattCharacteristic bluetoothGattCharacteristic)
     {
         return lookup(bluetoothGattCharacteristic.getUuid());
+    }
+
+    public static boolean isReadable(BluetoothGattCharacteristic bluetoothGattCharacteristic)
+    {
+        int prop = bluetoothGattCharacteristic.getProperties();
+        if((prop & BluetoothGattCharacteristic.PROPERTY_READ) != 0)
+        {
+            return true;
+        }
+
+        return false;
     }
 
 }

@@ -35,10 +35,9 @@ public class DeviceActivity extends ActionBarActivity {
     private ArrayList<HashMap<String, String>> gattServicesData = new ArrayList<>();
     private ArrayList<ArrayList<HashMap<String, String>>> gattCharacteristicData = new ArrayList<>();
 
-
-
     private static final String LIST_NAME = "NAME";
     private static final String LIST_UUID = "UUID";
+    private static final String LIST_RAW = "RAW";
 
     private static final String TAG = "DeviceActivity";
 
@@ -72,22 +71,29 @@ public class DeviceActivity extends ActionBarActivity {
         }
     };
 
-    private void displayGattServices(List<BluetoothGattService> gattServices) {
-        for(BluetoothGattService gs : gattServices)
+    private void displayGattServices(ArrayList<HashMap<String, Object>> gattServices) {
+        for(HashMap<String, Object> serviceMap : gattServices)
         {
             HashMap<String, String> currentService = new HashMap<>();
             ArrayList<HashMap<String, String>> currentServiceCharacteristics = new ArrayList<>();
+            BluetoothGattService service = (BluetoothGattService) serviceMap.get(BluetoothLeService.ENTRY_SERVICE);
 
-            currentService.put(LIST_NAME, GattUtils.lookup(gs));
-            currentService.put(LIST_UUID, gs.getUuid().toString());
+            currentService.put(LIST_NAME, GattUtils.lookup(service));
+            currentService.put(LIST_UUID, service.getUuid().toString());
             gattServicesData.add(currentService);
 
-            List<BluetoothGattCharacteristic> gattCharacteristics = gs.getCharacteristics();
+            List<BluetoothGattCharacteristic> gattCharacteristics = (List<BluetoothGattCharacteristic>) serviceMap.get(BluetoothLeService.ENTRY_CHARACTERISTICS);
             for(BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics)
             {
                 HashMap<String, String> currentCharacteristic = new HashMap<>();
                 currentCharacteristic.put(LIST_NAME, GattUtils.lookup(gattCharacteristic));
                 currentCharacteristic.put(LIST_UUID, gattCharacteristic.getUuid().toString());
+                if(GattUtils.isReadable(gattCharacteristic))
+                {
+                    currentCharacteristic.put(LIST_RAW, gattCharacteristic.getStringValue(0));
+                } else {
+                    currentCharacteristic.put(LIST_RAW, "");
+                }
                 currentServiceCharacteristics.add(currentCharacteristic);
             }
 
@@ -109,9 +115,9 @@ public class DeviceActivity extends ActionBarActivity {
                 new String[] {LIST_NAME, LIST_UUID},
                 new int[] {android.R.id.text1, android.R.id.text2},
                 gattCharacteristicData,
-                android.R.layout.simple_expandable_list_item_2,
-                new String[] {LIST_NAME, LIST_UUID},
-                new int[] {android.R.id.text1, android.R.id.text2}
+                R.layout.device_characteristic,
+                new String[] {LIST_NAME, LIST_UUID, LIST_RAW},
+                new int[] {R.id.chara_name, R.id.chara_uuid, R.id.chara_raw}
         );
         mExpandableListView.setAdapter(mSimpleExpandableListAdapter);
 
