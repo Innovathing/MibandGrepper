@@ -39,6 +39,7 @@ public class DeviceActivity extends ActionBarActivity {
     private static final String LIST_UUID = "UUID";
     private static final String LIST_RAW = "RAW";
     private static final String LIST_RIGHTS = "RIGHTS";
+    private static final String LIST_HEXDUMP = "HEXDUMP";
 
     private static final String TAG = "DeviceActivity";
 
@@ -94,9 +95,15 @@ public class DeviceActivity extends ActionBarActivity {
                             (GattUtils.isWritable(gattCharacteristic) ? "write" : "")
                         );
                 currentCharacteristic.put(LIST_RAW, "Raw data : not readable");
+                currentCharacteristic.put(LIST_HEXDUMP, "Hexdump : not readable");
                 if(GattUtils.isReadable(gattCharacteristic))
                 {
                     currentCharacteristic.put(LIST_RAW, "Raw data ("+gattCharacteristic.getValue().length+" bytes) : " + gattCharacteristic.getStringValue(0));
+
+                    String hexdump = "Hexdump :\n";
+                    hexdump += GattUtils.hexdump(gattCharacteristic);
+                    currentCharacteristic.put(LIST_HEXDUMP, hexdump);
+
                 }
 
                 currentServiceCharacteristics.add(currentCharacteristic);
@@ -121,8 +128,8 @@ public class DeviceActivity extends ActionBarActivity {
                 new int[] {android.R.id.text1, android.R.id.text2},
                 gattCharacteristicData,
                 R.layout.device_characteristic,
-                new String[] {LIST_NAME, LIST_UUID, LIST_RIGHTS, LIST_RAW},
-                new int[] {R.id.chara_name, R.id.chara_uuid, R.id.chara_rights, R.id.chara_raw}
+                new String[] {LIST_NAME, LIST_UUID, LIST_RIGHTS, LIST_RAW, LIST_HEXDUMP},
+                new int[] {R.id.chara_name, R.id.chara_uuid, R.id.chara_rights, R.id.chara_raw, R.id.chara_hexdump}
         );
         mExpandableListView.setAdapter(mSimpleExpandableListAdapter);
 

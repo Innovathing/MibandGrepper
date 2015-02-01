@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.util.Log;
 
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -81,6 +82,23 @@ public class GattUtils {
         }
 
         return false;
+    }
+
+    public static String hexdump(BluetoothGattCharacteristic bluetoothGattCharacteristic)
+    {
+        StringWriter hexdump = new StringWriter();
+        byte[] data = bluetoothGattCharacteristic.getValue();
+
+        for(int i = 0; i < data.length; i++)
+        {
+            hexdump.append(String.format("%02x ", data[i]));
+            if(i%7 == 0 && i != 0)
+            {
+                hexdump.append("\n");
+            }
+        }
+
+        return hexdump.toString();
     }
 
 }
