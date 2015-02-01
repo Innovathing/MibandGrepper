@@ -53,7 +53,7 @@ public class MainActivity extends ActionBarActivity implements SwipeRefreshLayou
         mSwipeRefreshLayout.setOnRefreshListener(this);
 
         mListView = (ListView) findViewById(R.id.monSuperListView);
-        mDeviceListAdapter = new DeviceListAdapter(this, R.layout.device_layout);
+        mDeviceListAdapter = new DeviceListAdapter(this, android.R.layout.simple_list_item_2);
         mListView.setAdapter(mDeviceListAdapter);
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
