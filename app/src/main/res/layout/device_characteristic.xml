@@ -21,6 +21,12 @@
         android:textAppearance="?android:attr/textAppearanceListItemSecondary"/>
 
     <TextView
+        android:id="@+id/chara_rights"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceListItemSecondary"/>
+
+    <TextView
         android:id="@+id/chara_raw"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -38,6 +38,7 @@ public class DeviceActivity extends ActionBarActivity {
     private static final String LIST_NAME = "NAME";
     private static final String LIST_UUID = "UUID";
     private static final String LIST_RAW = "RAW";
+    private static final String LIST_RIGHTS = "RIGHTS";
 
     private static final String TAG = "DeviceActivity";
 
@@ -88,12 +89,16 @@ public class DeviceActivity extends ActionBarActivity {
                 HashMap<String, String> currentCharacteristic = new HashMap<>();
                 currentCharacteristic.put(LIST_NAME, GattUtils.lookup(gattCharacteristic));
                 currentCharacteristic.put(LIST_UUID, gattCharacteristic.getUuid().toString());
+                currentCharacteristic.put(LIST_RIGHTS, "Rights : " +
+                            (GattUtils.isReadable(gattCharacteristic) ? "read " : "") +
+                            (GattUtils.isWritable(gattCharacteristic) ? "write" : "")
+                        );
+                currentCharacteristic.put(LIST_RAW, "");
                 if(GattUtils.isReadable(gattCharacteristic))
                 {
                     currentCharacteristic.put(LIST_RAW, gattCharacteristic.getStringValue(0));
-                } else {
-                    currentCharacteristic.put(LIST_RAW, "");
                 }
+
                 currentServiceCharacteristics.add(currentCharacteristic);
             }
 
@@ -116,8 +121,8 @@ public class DeviceActivity extends ActionBarActivity {
                 new int[] {android.R.id.text1, android.R.id.text2},
                 gattCharacteristicData,
                 R.layout.device_characteristic,
-                new String[] {LIST_NAME, LIST_UUID, LIST_RAW},
-                new int[] {R.id.chara_name, R.id.chara_uuid, R.id.chara_raw}
+                new String[] {LIST_NAME, LIST_UUID, LIST_RIGHTS, LIST_RAW},
+                new int[] {R.id.chara_name, R.id.chara_uuid, R.id.chara_rights, R.id.chara_raw}
         );
         mExpandableListView.setAdapter(mSimpleExpandableListAdapter);
 

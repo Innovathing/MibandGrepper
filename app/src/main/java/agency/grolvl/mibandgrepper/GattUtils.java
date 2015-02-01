@@ -71,4 +71,16 @@ public class GattUtils {
         return false;
     }
 
+    public static boolean isWritable(BluetoothGattCharacteristic bluetoothGattCharacteristic)
+    {
+        int prop = bluetoothGattCharacteristic.getProperties();
+        if((prop & BluetoothGattCharacteristic.PROPERTY_WRITE) != 0 ||
+           (prop & BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE) != 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 }
