@@ -20,7 +20,7 @@ public class GattUtils {
     Informations from https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx
      */
     static {
-        attributes.put("00001800" + UUID_BASE, "Generic informations");
+        attributes.put("00001800" + UUID_BASE, "Generic access");
         attributes.put("00001801" + UUID_BASE, "Generic attribute");
         attributes.put("00001802" + UUID_BASE, "Immediate alert");
         attributes.put("0000fee0" + UUID_BASE, "Mili Service");
