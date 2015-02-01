@@ -93,10 +93,10 @@ public class DeviceActivity extends ActionBarActivity {
                             (GattUtils.isReadable(gattCharacteristic) ? "read " : "") +
                             (GattUtils.isWritable(gattCharacteristic) ? "write" : "")
                         );
-                currentCharacteristic.put(LIST_RAW, "");
+                currentCharacteristic.put(LIST_RAW, "Raw data : not readable");
                 if(GattUtils.isReadable(gattCharacteristic))
                 {
-                    currentCharacteristic.put(LIST_RAW, gattCharacteristic.getStringValue(0));
+                    currentCharacteristic.put(LIST_RAW, "Raw data ("+gattCharacteristic.getValue().length+" bytes) : " + gattCharacteristic.getStringValue(0));
                 }
 
                 currentServiceCharacteristics.add(currentCharacteristic);
