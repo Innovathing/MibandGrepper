@@ -2,7 +2,6 @@ package agency.grolvl.mibandgrepper;
 
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
-import android.util.Log;
 
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -119,6 +118,26 @@ public class GattUtils {
         }
 
         return hexdump.toString();
+    }
+
+    public static HashMap<String, String> parseGatt(BluetoothGattCharacteristic bluetoothGattCharacteristic)
+    {
+        HashMap<String, String> ret = new HashMap<>();
+
+        if(bluetoothGattCharacteristic.getUuid().compareTo(CHARACTERISTIC_MILI_BATTERY) == 0)
+        {
+            byte[] data = bluetoothGattCharacteristic.getValue(); // must be 10 bytes
+            String date = data[3]+"/"+data[2]+"/"+(2000+data[1])+" "+data[4]+":"+data[5]+":"+data[6]+"";
+            String level = data[0]+"%";
+            int charges = 0xFFFF & ((data[8] << 8) | data[7]);
+            String status = data[9] + "";
+            ret.put("level", level);
+            ret.put("last charge", date);
+            ret.put("charges", "" + charges);
+            ret.put("status", status); // visiblement 2 = en charge, 4 pas en charge
+        }
+
+        return ret;
     }
 
 }

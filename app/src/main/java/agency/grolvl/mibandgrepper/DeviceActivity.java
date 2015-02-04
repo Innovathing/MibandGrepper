@@ -21,6 +21,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class DeviceActivity extends ActionBarActivity {
@@ -40,6 +41,7 @@ public class DeviceActivity extends ActionBarActivity {
     private static final String LIST_RAW = "RAW";
     private static final String LIST_RIGHTS = "RIGHTS";
     private static final String LIST_HEXDUMP = "HEXDUMP";
+    private static final String LIST_PARSED = "PARSED";
 
     private static final String TAG = "DeviceActivity";
 
@@ -104,6 +106,14 @@ public class DeviceActivity extends ActionBarActivity {
                     hexdump += GattUtils.hexdump(gattCharacteristic);
                     currentCharacteristic.put(LIST_HEXDUMP, hexdump);
 
+                    String strParsed = "";
+                    HashMap<String, String> parsed = GattUtils.parseGatt(gattCharacteristic);
+                    for(Map.Entry<String, String> current : parsed.entrySet())
+                    {
+                        strParsed += current.getKey() + ": " + current.getValue() + "\n";
+                    }
+                    currentCharacteristic.put(LIST_PARSED, strParsed);
+
                 }
 
                 currentServiceCharacteristics.add(currentCharacteristic);
@@ -128,8 +138,8 @@ public class DeviceActivity extends ActionBarActivity {
                 new int[] {android.R.id.text1, android.R.id.text2},
                 gattCharacteristicData,
                 R.layout.device_characteristic,
-                new String[] {LIST_NAME, LIST_UUID, LIST_RIGHTS, LIST_RAW, LIST_HEXDUMP},
-                new int[] {R.id.chara_name, R.id.chara_uuid, R.id.chara_rights, R.id.chara_raw, R.id.chara_hexdump}
+                new String[] {LIST_NAME, LIST_UUID, LIST_RIGHTS, LIST_RAW, LIST_HEXDUMP, LIST_PARSED},
+                new int[] {R.id.chara_name, R.id.chara_uuid, R.id.chara_rights, R.id.chara_raw, R.id.chara_hexdump, R.id.chara_parsed}
         );
         mExpandableListView.setAdapter(mSimpleExpandableListAdapter);
 
