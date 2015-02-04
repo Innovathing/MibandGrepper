@@ -15,39 +15,59 @@ public class GattUtils {
 
     private final static String TAG = "GattUtils";
 
-    private static HashMap<String, String> attributes = new HashMap<>();
+    private static HashMap<UUID, String> attributes = new HashMap<>();
 
     private static String UUID_BASE = "-0000-1000-8000-00805f9b34fb";
+    public static UUID SERVICE_GENERIC_ACCESS = UUID.fromString("00001800" + UUID_BASE);
+    public static UUID SERVICE_GENERIC_ATTRIBUTE = UUID.fromString("00001801" + UUID_BASE);
+    public static UUID SERVICE_IMMEDIATE_ALERT = UUID.fromString("00001802" + UUID_BASE);
+    public static UUID SERVICE_MILI = UUID.fromString("0000fee0" + UUID_BASE);
 
+    public static UUID CHARACTERISTIC_MILI_DEVICE_INFOS = UUID.fromString("0000ff01" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_DEVICE_NAME = UUID.fromString("0000ff02" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_NOTIFICATIONS = UUID.fromString("0000ff03" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_USER_INFOS = UUID.fromString("0000ff04" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_CONTROL_POINT = UUID.fromString("0000ff05" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_REALTIME_STEPS = UUID.fromString("0000ff06" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_ACTIVITY_DATA = UUID.fromString("0000ff07" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_FIRMWARE_DATA = UUID.fromString("0000ff08" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_LE_PARAMS = UUID.fromString("0000ff09" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_DATETIME = UUID.fromString("0000ff0a" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_STATS = UUID.fromString("0000ff0b" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_BATTERY = UUID.fromString("0000ff0c" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_TEST = UUID.fromString("0000ff0d" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_SENSOR_DATA = UUID.fromString("0000ff0e" + UUID_BASE);
+    public static UUID CHARACTERISTIC_MILI_PAIR = UUID.fromString("0000ff0f" + UUID_BASE);
     /*
     Informations from https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx
+    & reverse of miband app
      */
     static {
-        attributes.put("00001800" + UUID_BASE, "Generic access");
-        attributes.put("00001801" + UUID_BASE, "Generic attribute");
-        attributes.put("00001802" + UUID_BASE, "Immediate alert");
-        attributes.put("0000fee0" + UUID_BASE, "Mili Service");
+        attributes.put(SERVICE_GENERIC_ACCESS, "Generic access");
+        attributes.put(SERVICE_GENERIC_ATTRIBUTE, "Generic attribute");
+        attributes.put(SERVICE_IMMEDIATE_ALERT, "Immediate alert");
+        attributes.put(SERVICE_MILI, "Mili Service");
 
-        attributes.put("0000ff01" + UUID_BASE, "Device infos");
-        attributes.put("0000ff02" + UUID_BASE, "Device name");
-        attributes.put("0000ff03" + UUID_BASE, "Notifications");
-        attributes.put("0000ff04" + UUID_BASE, "User informations");
-        attributes.put("0000ff05" + UUID_BASE, "Control point");
-        attributes.put("0000ff06" + UUID_BASE, "Realtime steps");
-        attributes.put("0000ff07" + UUID_BASE, "Activity data");
-        attributes.put("0000ff08" + UUID_BASE, "Firmware data");
-        attributes.put("0000ff09" + UUID_BASE, "Low energy params");
-        attributes.put("0000ff0a" + UUID_BASE, "Datetime");
-        attributes.put("0000ff0b" + UUID_BASE, "Statistics");
-        attributes.put("0000ff0c" + UUID_BASE, "Battery");
-        attributes.put("0000ff0d" + UUID_BASE, "Test ?!?");
-        attributes.put("0000ff0e" + UUID_BASE, "Sensor data");
-        attributes.put("0000ff0f" + UUID_BASE, "Pair");
+        attributes.put(CHARACTERISTIC_MILI_DEVICE_INFOS, "Device infos");
+        attributes.put(CHARACTERISTIC_MILI_DEVICE_NAME, "Device name");
+        attributes.put(CHARACTERISTIC_MILI_NOTIFICATIONS, "Notifications");
+        attributes.put(CHARACTERISTIC_MILI_USER_INFOS, "User informations");
+        attributes.put(CHARACTERISTIC_MILI_CONTROL_POINT, "Control point");
+        attributes.put(CHARACTERISTIC_MILI_REALTIME_STEPS, "Realtime steps");
+        attributes.put(CHARACTERISTIC_MILI_ACTIVITY_DATA, "Activity data");
+        attributes.put(CHARACTERISTIC_MILI_FIRMWARE_DATA, "Firmware data");
+        attributes.put(CHARACTERISTIC_MILI_LE_PARAMS, "Low energy params");
+        attributes.put(CHARACTERISTIC_MILI_DATETIME, "Datetime");
+        attributes.put(CHARACTERISTIC_MILI_STATS, "Statistics");
+        attributes.put(CHARACTERISTIC_MILI_BATTERY, "Battery");
+        attributes.put(CHARACTERISTIC_MILI_TEST, "Test ?!?");
+        attributes.put(CHARACTERISTIC_MILI_SENSOR_DATA, "Sensor data");
+        attributes.put(CHARACTERISTIC_MILI_PAIR, "Pair");
     }
 
     public static String lookup(UUID uuid)
     {
-        String name = attributes.get(uuid.toString());
+        String name = attributes.get(uuid);
         return name == null ? uuid.toString() : name;
     }
 
